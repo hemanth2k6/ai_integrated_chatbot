@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
-import { MessageSquare, Settings, PlusCircle, LayoutDashboard } from "lucide-react";
+import { MessageSquare, Settings, PlusCircle, LayoutDashboard, LogIn, LogOut } from "lucide-react";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export function Sidebar() {
+  const { data: session } = useSession();
+
   return (
     <aside className="w-64 border-r border-slate-800/60 bg-slate-900/40 backdrop-blur-2xl h-screen flex flex-col p-5 z-20">
       {/* Brand / Logo */}
@@ -13,7 +18,7 @@ export function Sidebar() {
       </div>
 
       {/* Primary Action */}
-      <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white p-3.5 rounded-xl mb-8 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transform hover:-translate-y-0.5">
+      <button className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white p-3.5 rounded-xl mb-6 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] transform hover:-translate-y-0.5">
         <PlusCircle className="w-5 h-5" />
         <span className="font-semibold text-sm">New Chat</span>
       </button>
@@ -31,11 +36,23 @@ export function Sidebar() {
       </nav>
 
       {/* Footer / Account */}
-      <div className="pt-6 border-t border-slate-800/80">
+      <div className="pt-4 border-t border-slate-800/80 space-y-2">
         <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:bg-slate-800/50 hover:text-white transition-all border border-transparent hover:border-slate-700/50">
           <Settings className="w-5 h-5" />
-          <span className="font-medium">Settings</span>
+          <span className="font-medium text-sm">Settings</span>
         </button>
+        
+        {session ? (
+          <button onClick={() => signOut()} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all border border-transparent">
+            <LogOut className="w-5 h-5" />
+            <span className="font-medium text-sm">Sign Out</span>
+          </button>
+        ) : (
+          <button onClick={() => signIn("github")} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-green-400 hover:bg-green-500/10 hover:text-green-300 transition-all border border-transparent">
+            <LogIn className="w-5 h-5" />
+            <span className="font-medium text-sm">Sign In</span>
+          </button>
+        )}
       </div>
     </aside>
   );
