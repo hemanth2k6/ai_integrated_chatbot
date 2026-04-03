@@ -1,69 +1,69 @@
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { streamText } from 'ai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+
+export const maxDuration = 30;
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+});
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, id } = await req.json();
+
+    const chatId = id;
     
-    // Attempt to identify the User (Optional)
-    const session = await getServerSession(authOptions);
-    let dbUser = null;
-    
-    if (session?.user?.email) {
-      dbUser = await prisma.user.upsert({
-        where: { email: session.user.email },
-        update: { name: session.user.name },
-        create: { email: session.user.email, name: session.user.name },
+    if (chatId) {
+      let chat = await prisma.chat.findUnique({ where: { id: chatId } });
+      
+      if (!chat) {
+        chat = await prisma.chat.create({
+          data: {
+            id: chatId,
+            title: messages.length > 0 ? messages[0].content.substring(0, 40) + '...' : "New Conversation",
+          }
+        });
+      }
+
+      const userMessage = messages[messages.length - 1];
+      
+      await prisma.message.create({
+        data: {
+          chatId: chatId,
+          role: userMessage.role,
+          content: userMessage.content,
+        }
       });
     }
 
     const result = streamText({
-      model: openai("gpt-4o"),
+      model: google('gemini-flash-latest'),
       messages,
       async onFinish({ text }) {
-        try {
-          // Extract the latest message from the user
-          const userMessage = messages[messages.length - 1].content;
-
-          // Scaffold a new Chat Session in SQLite
-          const newChat = await prisma.chat.create({
-            data: {
-              title: userMessage.substring(0, 40) + "...",
-              userId: dbUser?.id, // Falls back to null if anonymous
-            }
-          });
-
-          // Save the User's input
-          await prisma.message.create({
-            data: {
-              chatId: newChat.id,
-              content: userMessage,
-              role: "user",
-            }
-          });
-
-          // Save Kai's streaming response after it fully completes
-          await prisma.message.create({
-            data: {
-              chatId: newChat.id,
-              content: text,
-              role: "assistant",
-            }
-          });
-          
-          console.log(`✅ Chat saved to SQLite! ID: ${newChat.id}`);
-        } catch (dbError) {
-          console.error("Failed to save to database:", dbError);
+        if (chatId) {
+          try {
+            await prisma.message.create({
+              data: {
+                chatId: chatId,
+                role: 'assistant',
+                content: text,
+              }
+            });
+          } catch (dbError) {
+            console.error("Failed to save assistant message:", dbError);
+          }
         }
-      }
+      },
     });
 
     return result.toTextStreamResponse();
-  } catch (error) {
-    console.error("Error with OpenAI API:", error as any);
-    return new Response("Internal Server Error", { status: 500 });
+  } catch (error: any) {
+    console.error("Chat API Error:", error);
+    return NextResponse.json(
+      { error: "Failed to process chat: " + (error.message || "Unknown error") },
+      { status: 500 }
+    );
   }
 }
