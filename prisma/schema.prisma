@@ -10,6 +10,7 @@ model User {
   id        String   @id @default(cuid())
   email     String?  @unique
   name      String?
+  password  String?
   chats     Chat[]
   createdAt DateTime @default(now())
 }
@@ -30,5 +31,7 @@ model Message {
   chat      Chat     @relation(fields: [chatId], references: [id])
   content   String
   role      String   // "user" or "assistant"
+  audioUrl  String?
+  fileUrl   String?
   createdAt DateTime @default(now())
 }
