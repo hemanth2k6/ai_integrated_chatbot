@@ -54,10 +54,24 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET || "kai_super_secret_fallback",
   callbacks: {
+    jwt: async ({ token, user, trigger, session }) => {
+      if (user) {
+        // Pass the user ID and isVerified to the token on initial login
+        token.sub = user.id;
+        token.isVerified = (user as any).isVerified;
+      }
+      
+      // Allow dynamic updating of the token after a user verifies their email manually
+      if (trigger === "update" && session && session.isVerified !== undefined) {
+        token.isVerified = session.isVerified;
+      }
+      
+      return token;
+    },
     session: ({ session, token }) => {
       if (token && session.user) {
-        // Pass the user ID to the session to use in queries (like fetching user's chats)
         (session.user as any).id = token.sub;
+        (session.user as any).isVerified = token.isVerified;
       }
       return session;
     }

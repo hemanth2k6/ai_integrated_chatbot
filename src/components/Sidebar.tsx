@@ -70,6 +70,9 @@ function SidebarContent() {
               <div className="text-white text-sm font-medium truncate">{session.user.name || "User"}</div>
               <div className="text-slate-400 text-xs truncate">{session.user.email}</div>
             </div>
+            <Link href="/account/security" className="text-slate-400 hover:text-emerald-400 transition-colors p-2 rounded-lg hover:bg-emerald-500/10" title="Account Security">
+              <Settings className="w-4 h-4" />
+            </Link>
             <button onClick={() => signOut()} className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10" title="Sign Out">
               <LogOut className="w-4 h-4" />
             </button>

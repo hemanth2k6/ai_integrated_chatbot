@@ -10,8 +10,20 @@ model User {
   id        String   @id @default(cuid())
   email     String?  @unique
   name      String?
-  password  String?
-  chats     Chat[]
+  password      String?
+  chats         Chat[]
+  isVerified    Boolean        @default(false)
+  verifications Verification[]
+  createdAt     DateTime       @default(now())
+}
+
+model Verification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otp       String
+  type      String   // "EMAIL_VERIFICATION" or "PASSWORD_RESET"
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }
 

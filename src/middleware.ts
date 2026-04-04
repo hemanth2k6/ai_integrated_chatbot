@@ -35,6 +35,13 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
+  // Verification Check
+  if (token && token.isVerified === false) {
+    if (pathname === "/" || pathname === "/dashboard" || pathname === "/account/security") {
+      return NextResponse.redirect(new URL("/auth/verify", req.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
