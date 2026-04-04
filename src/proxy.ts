@@ -1,15 +1,15 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET || "kai_super_secret_fallback" });
-  
+
   const { pathname } = req.nextUrl;
 
   // Static files and Next.js internal routes
   if (
-    pathname.startsWith("/_next") || 
-    pathname.startsWith("/favicon.ico") || 
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon.ico") ||
     pathname.match(/\.(png|jpg|jpeg|svg|webp|gif)$/)
   ) {
     return NextResponse.next();
