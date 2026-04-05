@@ -44,4 +44,3 @@ next-env.d.ts
 .env*.local
 
 *.db
-prisma/dev.db
