@@ -19,23 +19,35 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/register", {
+      // Send OTP
+      const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          email: email,
+        }),
       });
 
-      if (res.ok) {
-        router.push("/login?registered=true");
-      } else {
-        const data = await res.json();
-        setError(data.message || "Registration failed");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to send verification code");
         setLoading(false);
+        return;
       }
+
+      // Redirect to verify page
+      router.push(
+        `/auth/verify?email=${encodeURIComponent(
+          email
+        )}&name=${encodeURIComponent(
+          name
+        )}&password=${encodeURIComponent(password)}&otp=${data.otp}`
+      );
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError("Something went wrong");
       setLoading(false);
     }
   };
@@ -47,8 +59,12 @@ export default function RegisterPage() {
           <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.5)] mb-4">
             <MessageSquare className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Create an account</h1>
-          <p className="text-slate-400 text-sm mt-2">Join Kai and start chatting</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Create an account
+          </h1>
+          <p className="text-slate-400 text-sm mt-2">
+            Join Kai and start chatting
+          </p>
         </div>
 
         {error && (
@@ -59,7 +75,12 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="name">Full Name</label>
+            <label
+              className="block text-sm font-medium text-slate-300 mb-1.5"
+              htmlFor="name"
+            >
+              Full Name
+            </label>
             <input
               id="name"
               type="text"
@@ -72,7 +93,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="email">Email</label>
+            <label
+              className="block text-sm font-medium text-slate-300 mb-1.5"
+              htmlFor="email"
+            >
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -83,9 +109,14 @@ export default function RegisterPage() {
               placeholder="you@example.com"
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="password">Password</label>
+            <label
+              className="block text-sm font-medium text-slate-300 mb-1.5"
+              htmlFor="password"
+            >
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -104,13 +135,16 @@ export default function RegisterPage() {
             className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_25px_rgba(59,130,246,0.5)] flex items-center justify-center gap-2 mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-            {loading ? "Creating account..." : "Register"}
+            {loading ? "Sending OTP..." : "Register"}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+          <Link
+            href="/login"
+            className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+          >
             Sign in
           </Link>
         </div>
