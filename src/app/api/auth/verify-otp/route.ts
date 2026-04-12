@@ -1,54 +1,85 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    // User must be logged in to verify their session email
-    if (!session || !session.user || !(session.user as any).id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { email, otp } = await request.json();
+
+    if (!email || !otp) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    const userId = (session.user as any).id;
-    const body = await req.json();
-    const { otp } = body;
-
-    if (!otp) {
-      return NextResponse.json({ error: "OTP is required" }, { status: 400 });
-    }
-
-    // Find the latest valid OTP for this user
-    const verification = await prisma.verification.findFirst({
-      where: {
-        userId,
-        type: "EMAIL_VERIFICATION",
-        otp,
-        expiresAt: { gt: new Date() } // Must not be expired
-      },
-      orderBy: { createdAt: 'desc' }
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (!verification) {
-      return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 400 });
+    if (!user) {
+      return NextResponse.json(
+        { error: "Account not found" },
+        { status: 400 }
+      );
     }
 
-    // Success! Update the user as verified and delete used OTP
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userId },
-        data: { isVerified: true }
-      }),
-      prisma.verification.delete({
-        where: { id: verification.id }
-      }) // Alternatively, you could deleteMANY for this user to scrub all old unused ones
-    ]);
+    if (user.isVerified) {
+      return NextResponse.json(
+        { error: "Account is already verified" },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ message: "Verification successful" });
+    const verificationRecord = await prisma.verification.findFirst({
+      where: {
+        userId: user.id,
+        type: "EMAIL_VERIFICATION",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!verificationRecord) {
+      return NextResponse.json(
+        { error: "No verification code requested." },
+        { status: 400 }
+      );
+    }
+
+    if (verificationRecord.expiresAt < new Date()) {
+      return NextResponse.json(
+        { error: "Verification code expired. Please request a new one." },
+        { status: 400 }
+      );
+    }
+
+    if (verificationRecord.otp !== otp) {
+      return NextResponse.json(
+        { error: "Incorrect verification code." },
+        { status: 400 }
+      );
+    }
+
+    // Success! Verify the user
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { isVerified: true },
+    });
+
+    // Cleanup verifications
+    await prisma.verification.deleteMany({
+      where: { userId: user.id, type: "EMAIL_VERIFICATION" },
+    });
+
+    return NextResponse.json({
+      success: true,
+      user: { id: user.id, email: user.email, name: user.name },
+    });
+
   } catch (error) {
-    console.error("Verify OTP Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("Verification failed:", error);
+    return NextResponse.json(
+      { error: "Failed to verify account" },
+      { status: 500 }
+    );
   }
 }
