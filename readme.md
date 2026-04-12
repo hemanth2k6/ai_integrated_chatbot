@@ -6,7 +6,7 @@ Designed to mimic real-world AI chat platforms, Kai focuses on clean UI, secure 
 
 ---
 
-# 🚀 Live Demo
+#  Live Demo
 
 **Try it here:**  
 https://ai-integrated-chatbot-eta.vercel.app/login
@@ -18,19 +18,19 @@ https://ai-integrated-chatbot-eta.vercel.app/login
 
 # ✨ Features
 
-- 🤖 AI Chat Interface (ChatGPT-like UI)
-- 🔐 User Authentication (Login / Register)
-- 📧 Email Verification (SendGrid)
-- 💬 Chat History Persistence
-- 📁 Sidebar Chat Navigation
-- 🌙 Dark Modern UI
-- 🔒 Secure Authentication using NextAuth
-- 🗄️ Database Storage with Neon
-- 🚀 Deployed on Vercel
+-  AI Chat Interface (ChatGPT-like UI)
+-  User Authentication (Login / Register)
+-  Email Verification (SendGrid)
+-  Chat History Persistence
+-  Sidebar Chat Navigation
+-  Dark Modern UI
+-  Secure Authentication using NextAuth
+-  Database Storage with Neon
+-  Deployed on Vercel
 
 ---
 
-# 🧠 AI Assistant
+#  AI Assistant
 
 The chatbot is named **Kai**, designed to:
 
@@ -73,37 +73,38 @@ The chatbot is named **Kai**, designed to:
 
 ## Chat Interface
 
-<img width="100%" alt="Chat UI" src="https://github.com/hemanth2k6/ai_integrated_chatbot/public/chat.jpeg" />
+<img width="100%" alt="Chat UI" src="https://github.com/hemanth2k6/ai_integrated_chatbot/blob/main/public/chat.jpeg" />
 
 ## Register Page
 
-<img width="100%" alt="Register UI" src="https://github.com/hemanth2k6/ai_integrated_chatbot/public/register.jpeg" />
+<img width="100%" alt="Register UI" src="https://github.com/hemanth2k6/ai_integrated_chatbot/blob/main/public/register.jpeg" />
 
 ---
 
-# 🏗️ Project Structure
+##  Project Structure
 
-
-ai_integrated_chatbot
+```
+ai_integrated_chatbot/
 │
-├── app
-│ ├── login
-│ ├── register
-│ ├── chat
+├── app/
+│   ├── login/
+│   ├── register/
+│   └── chat/
 │
-├── components
-│ ├── ChatUI
-│ ├── Sidebar
+├── components/
+│   ├── ChatUI/
+│   └── Sidebar/
 │
-├── lib
-│ ├── auth
-│ ├── db
+├── lib/
+│   ├── auth/
+│   └── db/
 │
-├── api
-│ ├── auth
-│ ├── chat
+├── api/
+│   ├── auth/
+│   └── chat/
 │
 └── .env.local
+```
 
 
 ---
@@ -124,7 +125,7 @@ SENDGRID_FROM_EMAIL=
 
 ---
 
-## 📦 Installation
+##  Installation
 
 Clone the repository
 git clone https://github.com/hemanth2k6/ai_integrated_chatbot.git
@@ -158,7 +159,7 @@ Start chatting with Kai
 
 ---
 
-## 💡 Why This Project
+## Why This Project
 
 This project demonstrates:
 
@@ -171,7 +172,7 @@ This project demonstrates:
 
 ---
 
-## 📈 Future Improvements
+##  Future Improvements
 
 - Streaming AI responses
 - File upload support
@@ -182,7 +183,7 @@ This project demonstrates:
 
 ---
 
-## 👨‍💻 Author
+## 👨 Author
 
 Kalapati Hemanth
 
